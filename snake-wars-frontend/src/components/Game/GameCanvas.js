@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-const GameCanvas = ({ setScore, setPosition, setEnemies, setHealth }) => {
+const GameCanvas = ({ setScore, setPosition, setHealth, nickname }) => {
   const canvasRef = useRef(null);
-  const player = { x: 250, y: 250, size: 10, speed: 2, direction: { x: 0, y: 0 } };
+  const [player, setPlayer] = useState({
+    x: 250, y: 250, size: 10, speed: 2, direction: { x: 0, y: 0 }, nickname: nickname
+  });
   let food = { x: Math.random() * 500, y: Math.random() * 500 };
-  let enemies = [{ x: 100, y: 100 }, { x: 200, y: 200 }];
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -39,16 +40,12 @@ const GameCanvas = ({ setScore, setPosition, setEnemies, setHealth }) => {
       // Draw player
       context.fillStyle = 'green';
       context.fillRect(player.x, player.y, player.size, player.size);
+      context.fillStyle = 'white';
+      context.fillText(player.nickname, player.x, player.y - 10);
 
       // Draw food
       context.fillStyle = 'red';
       context.fillRect(food.x, food.y, 5, 5);
-
-      // Draw enemies
-      context.fillStyle = 'blue';
-      enemies.forEach(enemy => {
-        context.fillRect(enemy.x, enemy.y, 10, 10);
-      });
 
       // Check collision with food
       if (
@@ -67,7 +64,6 @@ const GameCanvas = ({ setScore, setPosition, setEnemies, setHealth }) => {
       }
 
       setPosition({ x: player.x, y: player.y });
-      setEnemies(enemies);
 
       animationFrameId = requestAnimationFrame(render);
     };
@@ -82,7 +78,7 @@ const GameCanvas = ({ setScore, setPosition, setEnemies, setHealth }) => {
       window.removeEventListener('touchmove', handleTouchMove);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [setScore, setPosition, setEnemies, setHealth]);
+  }, [setScore, setPosition, setHealth, player]);
 
   return <canvas ref={canvasRef} width="500" height="500"></canvas>;
 };
