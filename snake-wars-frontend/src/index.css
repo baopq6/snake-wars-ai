@@ -1,0 +1,115 @@
+/* General styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #282c34;
+  color: #61dafb;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #20232a;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+canvas {
+  border: 2px solid #61dafb;
+  margin-bottom: 20px;
+  background-color: #ffffff;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin: 5px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  background-color: #61dafb;
+  color: #20232a;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #21a1f1;
+}
+
+.score-display,
+.tasks,
+.rewards {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.game-over {
+  font-size: 24px;
+  color: red;
+  margin-top: 20px;
+}
+
+.health-bar {
+  width: 100%;
+  background-color: #ddd;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.health-bar-fill {
+  height: 20px;
+  background-color: #76c7c0;
+  transition: width 0.3s ease-in-out;
+}
+
+.mini-map {
+  width: 200px;
+  height: 200px;
+  background: #ddd;
+  position: relative;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.player-position,
+.important-area {
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  border-radius: 50%;
+}
+
+.player-position {
+  background: red;
+}
+
+.important-area {
+  background: blue;
+}
+
+.special-skill-button {
+  background-color: #ff6666;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.special-skill-button:hover {
+  background-color: #ff4c4c;
+}
