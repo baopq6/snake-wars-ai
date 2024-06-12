@@ -12,6 +12,7 @@ const Game = () => {
   const [tasks, setTasks] = useState([{ id: 1, description: 'Eat 5 food items', completed: false }]);
   const importantAreas = [{ x: 100, y: 100 }, { x: 200, y: 200 }];
   const [rewards, setRewards] = useState([]);
+  const [specialSkillActive, setSpecialSkillActive] = useState(false);
 
   useEffect(() => {
     if (player.score >= 50) {
@@ -20,17 +21,24 @@ const Game = () => {
     }
   }, [player.score]);
 
-  const handleSpecialSkill = () => {
-    console.log('Special Skill Activated');
+  const activateSpecialSkill = () => {
+    setSpecialSkillActive(true);
+    setTimeout(() => {
+      setSpecialSkillActive(false);
+    }, 5000); // Kỹ năng đặc biệt kéo dài 5 giây
   };
 
   return (
     <div className="game-container">
       <PlayerInfo player={player} />
       <HealthBar health={health} />
-      <button className="special-skill-button" onClick={handleSpecialSkill}>Special Skill</button>
+      <SpecialSkill activateSkill={activateSpecialSkill} />
       <MiniMap position={position} importantAreas={importantAreas} />
-      <GameCanvas setPlayer={setPlayer} setHealth={setHealth} />
+      <GameCanvas 
+        setPlayer={setPlayer} 
+        setHealth={setHealth} 
+        specialSkillActive={specialSkillActive}
+      />
       <div className="tasks">
         <h3>Tasks</h3>
         <ul>

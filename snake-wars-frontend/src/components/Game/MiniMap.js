@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MiniMap = ({ position, importantAreas }) => {
+const MiniMap = ({ position = { x: 0, y: 0 }, importantAreas = [] }) => {
   return (
     <div className="mini-map">
       <div

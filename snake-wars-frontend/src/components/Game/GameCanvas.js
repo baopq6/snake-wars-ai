@@ -4,7 +4,7 @@ import eatSound from '../../assets/eat.mp3';
 import gameOverSound from '../../assets/gameover.mp3';
 import Enemy from './Enemy';
 
-const GameCanvas = ({ setPlayer, setHealth }) => {
+const GameCanvas = ({ setPlayer, setHealth, specialSkillActive }) => {
   const canvasRef = useRef(null);
   const [snake, setSnake] = useState([{ x: 50, y: 50 }]);
   const [direction, setDirection] = useState({ x: 1, y: 0 });
@@ -46,7 +46,10 @@ const GameCanvas = ({ setPlayer, setHealth }) => {
       newSnake.pop();
     }
 
-    if (enemies.some(enemy => enemy.x === head.x && enemy.y === head.y)) {
+    if (specialSkillActive && enemies.some(enemy => enemy.x === head.x && enemy.y === head.y)) {
+      // Khi kỹ năng đặc biệt hoạt động, tiêu diệt enemy và không game over
+      setEnemies(enemies.filter(enemy => enemy.x !== head.x || enemy.y !== head.y));
+    } else if (enemies.some(enemy => enemy.x === head.x && enemy.y === head.y)) {
       setGameOver(true);
       playGameOverSound();
       setHealth(0); // Giảm sức khỏe về 0 khi game over
@@ -65,13 +68,13 @@ const GameCanvas = ({ setPlayer, setHealth }) => {
 
   const drawGame = (context, snake, enemies) => {
     context.clearRect(0, 0, canvasWidth, canvasHeight);
-    const colors = ['green', 'blue', 'orange', 'purple', 'pink'];
-    context.fillStyle = colors[score % colors.length];
+    const colors = ['green', 'blue', 'orange', 'purple', 'pink']; // Thêm các màu sắc khác nhau cho skin
+    context.fillStyle = colors[score % colors.length]; // Thay đổi màu sắc theo điểm số
     snake.forEach(segment => context.fillRect(segment.x, segment.y, 10, 10));
     context.fillStyle = 'red';
     context.fillRect(food.x, food.y, 10, 10);
     context.fillStyle = 'black';
-    enemies.forEach(enemy => context.fillRect(enemy.x, enemy.y, 10, 10));
+    enemies.forEach(enemy => context.fillRect(enemy.x, enemy.y, 10, 10)); // Vẽ enemy trong khung canvas
   };
 
   const handleMouseMove = (event) => {
