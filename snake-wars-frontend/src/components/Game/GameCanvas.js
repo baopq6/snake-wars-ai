@@ -1,129 +1,90 @@
-import React, { useRef, useEffect, useState } from 'react';
-import useAudio from '../../hooks/useAudio';
-import eatSound from '../../assets/eat.mp3';
-import gameOverSound from '../../assets/gameover.mp3';
-import Enemy from './Enemy';
+import React, { useEffect, useRef } from 'react';
 
-const GameCanvas = ({ setPlayer, setHealth, specialSkillActive }) => {
+const GameCanvas = ({ setScore, setPosition, setEnemies, setHealth }) => {
   const canvasRef = useRef(null);
-  const [snake, setSnake] = useState([{ x: 50, y: 50 }]);
-  const [direction, setDirection] = useState({ x: 1, y: 0 });
-  const [food, setFood] = useState({ x: 100, y: 100 });
-  const [enemies, setEnemies] = useState([{ x: 150, y: 150 }]);
-  const [gameOver, setGameOver] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const [score, setScore] = useState(0);
-  const playEatSound = useAudio(eatSound);
-  const playGameOverSound = useAudio(gameOverSound);
-  const canvasWidth = 400;
-  const canvasHeight = 400;
+  const player = { x: 250, y: 250, size: 10, speed: 2, direction: { x: 0, y: 0 } };
+  let food = { x: Math.random() * 500, y: Math.random() * 500 };
+  let enemies = [{ x: 100, y: 100 }, { x: 200, y: 200 }];
 
   useEffect(() => {
-    const context = canvasRef.current.getContext('2d');
-    const interval = setInterval(() => {
-      if (!gameOver && !paused) {
-        updateGame(context);
-      }
-    }, 50);
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+    let animationFrameId;
 
-    return () => clearInterval(interval);
-  }, [snake, direction, gameOver, paused]);
+    const handleMouseMove = (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+      const angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+      player.direction = { x: Math.cos(angle), y: Math.sin(angle) };
+    };
 
-  const updateGame = (context) => {
-    const newSnake = [...snake];
-    const head = { x: newSnake[0].x + direction.x * 10, y: newSnake[0].y + direction.y * 10 };
-    newSnake.unshift(head);
-    if (head.x === food.x && head.y === food.y) {
-      setFood({ x: Math.floor(Math.random() * canvasWidth), y: Math.floor(Math.random() * canvasHeight) });
-      playEatSound();
-      setScore(prevScore => {
-        const newScore = prevScore + 10;
-        setPlayer(player => ({ ...player, score: newScore }));
-        return newScore;
+    const handleTouchMove = (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const touch = event.touches[0];
+      const touchX = touch.clientX - rect.left;
+      const touchY = touch.clientY - rect.top;
+      const angle = Math.atan2(touchY - player.y, touchX - player.x);
+      player.direction = { x: Math.cos(angle), y: Math.sin(angle) };
+    };
+
+    const render = () => {
+      // Clear canvas
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Update player position
+      player.x += player.direction.x * player.speed;
+      player.y += player.direction.y * player.speed;
+
+      // Draw player
+      context.fillStyle = 'green';
+      context.fillRect(player.x, player.y, player.size, player.size);
+
+      // Draw food
+      context.fillStyle = 'red';
+      context.fillRect(food.x, food.y, 5, 5);
+
+      // Draw enemies
+      context.fillStyle = 'blue';
+      enemies.forEach(enemy => {
+        context.fillRect(enemy.x, enemy.y, 10, 10);
       });
-      setHealth(health => Math.min(100, health + 10)); // Tăng sức khỏe khi ăn thức ăn
-    } else {
-      newSnake.pop();
-    }
 
-    if (specialSkillActive && enemies.some(enemy => enemy.x === head.x && enemy.y === head.y)) {
-      // Khi kỹ năng đặc biệt hoạt động, tiêu diệt enemy và không game over
-      setEnemies(enemies.filter(enemy => enemy.x !== head.x || enemy.y !== head.y));
-    } else if (enemies.some(enemy => enemy.x === head.x && enemy.y === head.y)) {
-      setGameOver(true);
-      playGameOverSound();
-      setHealth(0); // Giảm sức khỏe về 0 khi game over
-      return;
-    }
+      // Check collision with food
+      if (
+        player.x < food.x + 5 &&
+        player.x + player.size > food.x &&
+        player.y < food.y + 5 &&
+        player.y + player.size > food.y
+      ) {
+        setScore(prevScore => prevScore + 10);
+        food = { x: Math.random() * 500, y: Math.random() * 500 };
+      }
 
-    if (head.x < 0 || head.x >= canvasWidth || head.y < 0 || head.y >= canvasHeight || newSnake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)) {
-      setGameOver(true);
-      playGameOverSound();
-      setHealth(0); // Giảm sức khỏe về 0 khi game over
-      return;
-    }
-    setSnake(newSnake);
-    drawGame(context, newSnake, enemies);
-  };
+      // Check collision with walls
+      if (player.x < 0 || player.x + player.size > canvas.width || player.y < 0 || player.y + player.size > canvas.height) {
+        setHealth(prevHealth => prevHealth - 10);
+      }
 
-  const drawGame = (context, snake, enemies) => {
-    context.clearRect(0, 0, canvasWidth, canvasHeight);
-    const colors = ['green', 'blue', 'orange', 'purple', 'pink']; // Thêm các màu sắc khác nhau cho skin
-    context.fillStyle = colors[score % colors.length]; // Thay đổi màu sắc theo điểm số
-    snake.forEach(segment => context.fillRect(segment.x, segment.y, 10, 10));
-    context.fillStyle = 'red';
-    context.fillRect(food.x, food.y, 10, 10);
-    context.fillStyle = 'black';
-    enemies.forEach(enemy => context.fillRect(enemy.x, enemy.y, 10, 10)); // Vẽ enemy trong khung canvas
-  };
+      setPosition({ x: player.x, y: player.y });
+      setEnemies(enemies);
 
-  const handleMouseMove = (event) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    setDirectionFromPointer(x, y);
-  };
+      animationFrameId = requestAnimationFrame(render);
+    };
 
-  const handleTouchMove = (event) => {
-    const touch = event.touches[0];
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-    setDirectionFromPointer(x, y);
-  };
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchmove', handleTouchMove);
 
-  const setDirectionFromPointer = (x, y) => {
-    const head = snake[0];
-    const deltaX = x - head.x;
-    const deltaY = y - head.y;
-    const angle = Math.atan2(deltaY, deltaX);
-    const newDirection = { x: Math.cos(angle), y: Math.sin(angle) };
-    setDirection(newDirection);
-  };
+    render();
 
-  const handlePauseResume = () => {
-    setPaused(!paused);
-  };
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [setScore, setPosition, setEnemies, setHealth]);
 
-  return (
-    <div>
-      <canvas
-        ref={canvasRef}
-        width={canvasWidth}
-        height={canvasHeight}
-        style={{ border: '1px solid #61dafb' }}
-        onMouseMove={handleMouseMove}
-        onTouchMove={handleTouchMove}
-      />
-      {gameOver && <div className="game-over">Game Over</div>}
-      <div className="score-display">Score: {score}</div>
-      <button onClick={handlePauseResume}>
-        {paused ? 'Resume' : 'Pause'}
-      </button>
-    </div>
-  );
+  return <canvas ref={canvasRef} width="500" height="500"></canvas>;
 };
 
 export default GameCanvas;
